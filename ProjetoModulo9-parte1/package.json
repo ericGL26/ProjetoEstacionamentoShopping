@@ -1,0 +1,25 @@
+{
+  "name": "projetomodulo9-parte1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "api.js",
+  "scripts": {
+    "test": " mocha ApiTest.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hapi/hapi": "^21.3.2",
+    "assert": "^2.1.0",
+    "chai": "^5.0.0",
+    "hapi": "^18.1.0",
+    "http": "^0.0.1-security",
+    "mongodb": "^6.3.0"
+  },
+  "devDependencies": {
+    "mocha": "^10.2.0",
+    "sleep-promise": "^9.1.0",
+    "wait-on": "^7.2.0"
+  }
+}
