@@ -1,0 +1,16 @@
+{
+  "name": "projetomodulo9-estacionamento-shopping",
+  "version": "1.0.0",
+  "description": "// Acesse o banco de dados desejado (vamos criar um chamado \"estacionamento\") use estacionamento",
+  "main": "api.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hapi/hapi": "^21.3.2",
+    "mongoose": "^8.1.0"
+  }
+}
