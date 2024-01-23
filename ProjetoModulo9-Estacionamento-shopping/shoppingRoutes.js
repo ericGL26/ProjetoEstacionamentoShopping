@@ -47,7 +47,6 @@ function CriarRotasApiShopping() {
 
                         const { Nome, Carro, Placa, HoraEntrada } = request.payload;
                         const novoUsuario = new Usuario({ Nome, Carro, Placa, HoraEntrada });
-                        console.log('nVUSAR', novoUsuario)
                         await novoUsuario.save()
                         return {mensagem: 'Usuário cadastrado com sucesso'}
 
@@ -59,7 +58,21 @@ function CriarRotasApiShopping() {
                 }
 
             }
+        },
+
+        {
+            method: 'POST',
+            path: '/FecharConta',
+            handler: async (request, h) => {
+               try{
+                const Requisicao = request.query;
+                return Requisicao
+               }catch(error){
+                console.log('Deu ruim', error)
+               }
+            }
         }
+
     ]
     return RotasApiShopping
 }
