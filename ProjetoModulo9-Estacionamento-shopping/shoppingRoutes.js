@@ -1,49 +1,69 @@
 const mongoose = require('mongoose')
 
+const usuarioSchemaRegistros = new mongoose.Schema({
+    Nome: {
+        type: String,
+        required: true
+    },
+    Carro: {
+        type: String,
+        required: true
+    },
+    Placa: {
+        type: String,
+        required: true
+    },
+    HoraEntrada: {
+        type: Date,
+        required: true
+    }
+})
+
+const vagaSchema = new mongoose.Schema({
+    VagasLivres: {
+        type: Number,
+        required: true
+    },
+    TotalVagas: {
+        type: Number,
+        required: false
+    }
+})
+
+const CaixaSchema = new mongoose.Schema({
+    Saldo: {
+        type: Number
+    }
+})
+
+
+const Usuario = mongoose.model('Usuario', usuarioSchemaRegistros, 'registros')
+const VagasShopping = mongoose.model('Vaga', vagaSchema, 'Vagas')
+const Caixa = mongoose.model('Caixa', CaixaSchema, 'Caixa')
+
+
+async function AlterarSaldoCaixa(ValorAPagar) {
+    await Caixa.updateOne(
+        { $inc: {Saldo: ValorAPagar}}
+    )
+}
+
+async function GerenciarVagas(acao) {
+    //true para adicionar false para retirar
+    let { VagasLivres } = await VagasShopping.findOne({});
+
+    if(acao == 'retirar'){
+        VagasLivres = VagasLivres - 1
+    }else if (acao == 'adicionar'){
+        VagasLivres = VagasLivres + 1
+    }
+   
+    await VagasShopping.updateOne(
+        { $set: {VagasLivres: VagasLivres}}
+    )
+}
+
 function CriarRotasApiShopping() {
-
-    const usuarioSchemaRegistros = new mongoose.Schema({
-        Nome: {
-            type: String,
-            required: true
-        },
-        Carro: {
-            type: String,
-            required: true
-        },
-        Placa: {
-            type: String,
-            required: true
-        },
-        HoraEntrada: {
-            type: Date,
-            required: true
-        }
-    })
-
-    const vagaSchema = new mongoose.Schema({
-        VagasLivres: {
-            type: Number,
-            required: true
-        },
-        TotalVagas: {
-            type: Number,
-            required: false
-        }
-    })
-
-    const CaixaSchema = new mongoose.Schema({
-        Saldo: {
-            type: Number
-        }
-    })
-
-
-    const Usuario = mongoose.model('Usuario', usuarioSchemaRegistros, 'registros')
-    const VagasShopping = mongoose.model('Vaga', vagaSchema, 'Vagas')
-    const Caixa = mongoose.model('Caixa', CaixaSchema, 'Caixa')
-
-
     const RotasApiShopping = [
         {
             method: 'POST',
@@ -53,9 +73,7 @@ function CriarRotasApiShopping() {
                     const RespostaRotaVaga = Vagas[0].VagasLivres;
                 if(RespostaRotaVaga >= 1){
                     try{
-                        await VagasShopping.updateOne(
-                            { $set: {VagasLivres: RespostaRotaVaga - 1}}
-                        )        
+                        GerenciarVagas('retirar')       
                         const { Nome, Carro, Placa, HoraEntrada } = request.payload;
                         const novoUsuario = new Usuario({ Nome, Carro, Placa, HoraEntrada });
                         await novoUsuario.save()
@@ -66,7 +84,8 @@ function CriarRotasApiShopping() {
                         console.log('Deu ruim!, bloco try falhou!', error)
                     }
                 }else{
-                    console.log('Não há vagas restantes!, Por favor retornar mais tarde..')
+                    console.log('nao ha vagas restantes')
+                    return 'Não há vagas restantes!, Por favor retornar mais tarde..'
                 }
 
             }
@@ -93,15 +112,9 @@ function CriarRotasApiShopping() {
 
                 const ValorAPagar = horas * PrecoPorHora + PrecoPorMinuto * minutos
 
-                await Caixa.updateOne(
-                    { $inc: {Saldo: ValorAPagar}}
-                )
+               AlterarSaldoCaixa(ValorAPagar)
 
-                const VagasDB = await VagasShopping.find({})
-                const VagasLivresDB = VagasDB[0].VagasLivres;
-                await VagasShopping.updateOne(
-                    { $set: {VagasLivres: VagasLivresDB + 1}}
-                )  
+               GerenciarVagas('adicionar')
 
                 return `Tempo no estacionamento: ${horas} horas, ${minutos} minutos, ${segundos} segundos, Preço a ser pago: ${ValorAPagar}`
                }catch(error){
