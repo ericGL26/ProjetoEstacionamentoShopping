@@ -49,7 +49,6 @@ async function AlterarSaldoCaixa(ValorAPagar) {
 }
 
 async function GerenciarVagas(acao) {
-    //true para adicionar false para retirar
     let { VagasLivres } = await VagasShopping.findOne({});
 
     if(acao == 'retirar'){
@@ -61,6 +60,18 @@ async function GerenciarVagas(acao) {
     await VagasShopping.updateOne(
         { $set: {VagasLivres: VagasLivres}}
     )
+}
+
+async function ApagarUsuarioNoRegistro(PlacaUsuario) {
+    const placa = {Placa: PlacaUsuario}
+    console.log('PLacaUSuario', placa)
+    try{
+        const DeletarUsuario = await Usuario.deleteOne(placa)
+        return DeletarUsuario
+    }catch(error){
+        console.log('Algo deu errado em apagar registro')
+        return;
+    }
 }
 
 function CriarRotasApiShopping() {
@@ -93,13 +104,18 @@ function CriarRotasApiShopping() {
 
         {
             method: 'POST',
-            path: '/FecharContaEPagar',
+            path: '/FecharConta',
             handler: async (request, h) => {
                try{
                 const Requisicao = request.payload;
                 const Placa = Requisicao.Placa
                 const HoraSaida = new Date(Requisicao.HoraSaida)
                 const ResultadoRegistro = await Usuario.find({ Placa: Placa });
+                console.log('ResultadoRe', ResultadoRegistro)
+                if(ResultadoRegistro == undefined || null || ResultadoRegistro.length === 0 ){
+                    console.log('Nao foi possivel definir um valor para ResultadoRegistro pois provavelmento o usuario nao existe no banco')
+                    return 'Usuario não encontrado'
+                }
                 const HoraEntrada = new Date(ResultadoRegistro[0].HoraEntrada)
                  
                 const DiferencaDeTempo = HoraSaida.getTime() - HoraEntrada.getTime();
@@ -112,16 +128,36 @@ function CriarRotasApiShopping() {
 
                 const ValorAPagar = horas * PrecoPorHora + PrecoPorMinuto * minutos
 
-               AlterarSaldoCaixa(ValorAPagar)
-
-               GerenciarVagas('adicionar')
-
                 return `Tempo no estacionamento: ${horas} horas, ${minutos} minutos, ${segundos} segundos, Preço a ser pago: ${ValorAPagar}`
                }catch(error){
                 console.log('Deu ruim', error)
                }
             }
+        },
+
+        {
+            method: 'POST',
+            path: '/Pagar',
+            handler: async (request, h) => {
+                try {
+                    const Requisicao = request.payload
+                    const Placa = Requisicao.Placa
+                    const ValorAPagar = Requisicao.ValorAPagar
+
+                    AlterarSaldoCaixa(ValorAPagar)
+
+                    GerenciarVagas('adicionar')
+
+                    ApagarUsuarioNoRegistro(Placa)
+                    return 'Pagamento foi realizado com sucesso'
+                }catch(error){
+                    console.log('Error no pagamento', error)
+                    return 'Erro no pagamento'
+                }
+               
+            }
         }
+
 
     ]
     return RotasApiShopping
