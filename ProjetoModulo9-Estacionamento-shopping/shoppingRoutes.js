@@ -74,6 +74,13 @@ async function ApagarUsuarioNoRegistro(PlacaUsuario) {
     }
 }
 
+async function CalcularTempoQueUsuarioFicaNoEstacionamento(DiferencaDeTempo) {
+    const horas = Math.floor((DiferencaDeTempo / 1000) / 60 / 60);
+    const minutos = Math.floor((DiferencaDeTempo / 1000) / 60) % 60;
+    const segundos = Math.floor(DiferencaDeTempo / 1000) % 60;
+    return [segundos, minutos, horas]
+}
+
 function CriarRotasApiShopping() {
     const RotasApiShopping = [
         {
@@ -111,25 +118,20 @@ function CriarRotasApiShopping() {
                 const Placa = Requisicao.Placa
                 const HoraSaida = new Date(Requisicao.HoraSaida)
                 const ResultadoRegistro = await Usuario.find({ Placa: Placa });
-                console.log('ResultadoRe', ResultadoRegistro)
                 if(ResultadoRegistro == undefined || null || ResultadoRegistro.length === 0 ){
                     console.log('Nao foi possivel definir um valor para ResultadoRegistro pois provavelmento o usuario nao existe no banco')
                     return 'Usuario não encontrado'
                 }
                 const HoraEntrada = new Date(ResultadoRegistro[0].HoraEntrada)
-                 
+                
                 const DiferencaDeTempo = HoraSaida.getTime() - HoraEntrada.getTime();
-                const horas = Math.floor(DiferencaDeTempo / (1000 * 60 * 60));
-                const minutos = Math.floor((DiferencaDeTempo % (1000 * 60 * 60)) / (1000 * 60));
-                const segundos = Math.floor((DiferencaDeTempo % (1000 * 60)) / 1000);
-
-                const PrecoPorHora = 6
+                const minutos = Math.floor((DiferencaDeTempo / 1000) / 60)
                 const PrecoPorMinuto = 0.10
+                const ValorAPagar = PrecoPorMinuto * minutos
 
-                const ValorAPagar = horas * PrecoPorHora + PrecoPorMinuto * minutos
-
-                return `Tempo no estacionamento: ${horas} horas, ${minutos} minutos, ${segundos} segundos, Preço a ser pago: ${ValorAPagar}`
-               }catch(error){
+                const diferenca_tempo = await CalcularTempoQueUsuarioFicaNoEstacionamento(DiferencaDeTempo)
+                return `Tempo no estacionamento: ${diferenca_tempo[2]} horas ${diferenca_tempo[1]} minutos  e ${diferenca_tempo[0]} segundos, Preço a pagar ${ValorAPagar}`
+               }catch(error){   
                 console.log('Deu ruim', error)
                }
             }
