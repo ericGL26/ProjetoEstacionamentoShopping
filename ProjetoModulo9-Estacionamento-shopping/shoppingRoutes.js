@@ -81,6 +81,32 @@ async function CalcularTempoQueUsuarioFicaNoEstacionamento(DiferencaDeTempo) {
     return [segundos, minutos, horas]
 }
 
+async function validaInformacaoRotaRegistrar(DadosRotaRegistrar) {
+    const dados = DadosRotaRegistrar
+
+    const PlacaCarroUsuario = dados.Placa
+    const regexPlaca = /^[A-Za-z]{3}\d[A-Za-z]\d{2}$/;
+
+    if(regexPlaca.test(PlacaCarroUsuario)){
+        return 'placa valida'
+    }else{
+        return 'placa invalida'
+    }
+
+}
+/*
+async function ValidaHoraSaidaEHoraEntrada(HoraEntrada, HoraSaida) {
+    console.log('HoraENtrada', HoraEntrada)
+    console.log('typeofhonraentrada', typeof(HoraEntrada))
+    
+    const regexHoraEntradaESaida = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):([0-5]\d):([0-5]\d)(\.\d+)?(Z|[+-]([01]\d|2[0-3]):?([0-5]\d))$/;
+    if(regexHoraEntradaESaida.test(HoraEntrada) ||regexHoraEntradaESaida.test(HoraSaida) ){
+        return 'Regex passou'
+    }else {
+        return 'Regex nao passou'
+    }
+}
+*/
 function CriarRotasApiShopping() {
     const RotasApiShopping = [
         {
@@ -89,21 +115,21 @@ function CriarRotasApiShopping() {
             handler: async (request, h) => {
                    const Vagas = await VagasShopping.find({})
                     const RespostaRotaVaga = Vagas[0].VagasLivres;
-                if(RespostaRotaVaga >= 1){
+                    const validacaoinformacaorotaregistrar = await validaInformacaoRotaRegistrar(request.payload)
+                if(RespostaRotaVaga >= 1 && validacaoinformacaorotaregistrar == 'placa valida'){
                     try{
-                        GerenciarVagas('retirar')       
                         const { Nome, Carro, Placa, HoraEntrada } = request.payload;
                         const novoUsuario = new Usuario({ Nome, Carro, Placa, HoraEntrada });
                         await novoUsuario.save()
-                        
+                        GerenciarVagas('retirar')       
                         return {mensagem: 'Usuário cadastrado com sucesso'}
 
                     }catch(error){
                         console.log('Deu ruim!, bloco try falhou!', error)
                     }
                 }else{
-                    console.log('nao ha vagas restantes')
-                    return 'Não há vagas restantes!, Por favor retornar mais tarde..'
+                    console.log('nao ha vagas restantes ou foi enviado uma placa invalida')
+                    return 'A validação da rota registrar não pode continuar por um erro desconhecido'
                 }
 
             }
@@ -115,6 +141,7 @@ function CriarRotasApiShopping() {
             handler: async (request, h) => {
                try{
                 const Requisicao = request.payload;
+                console.log('Requisicao rota fecharConta', Requisicao)
                 const Placa = Requisicao.Placa
                 const HoraSaida = new Date(Requisicao.HoraSaida)
                 const ResultadoRegistro = await Usuario.find({ Placa: Placa });

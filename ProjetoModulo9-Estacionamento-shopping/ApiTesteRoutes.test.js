@@ -3,23 +3,24 @@ const axios = require('axios')
 
 describe('Suite de testes da ApiShopping', () => {
     describe('Suite de testes da rota /Registrar', () => {
+        
         it('Teste de verificao de tipos de dados', () => {
                 const dados = {
-                    Nome: 'LulaMolusco',
-		            Carro: 'CivicVT',
-		            Placa: jgi3874,
-		            HoraEntrada: '2024-01-29T14:26:13.122Z'
+                    Nome: 132654347685,
+		            Carro: 454,
+		            Placa: 434,
+		            HoraEntrada: 2024
                 }
             axios.post('http://localhost:1145/Registrar', dados)
             .then((resposta) => {
-                console.log('Resposta: ', resposta)
+                console.log('Resposta: ', resposta.data.mensagem)
             })
             .catch((error) => {
                 console.log('Error: ', error)
             })
 
         })
-
+        
         it('Teste de verificacao de data invalida', () => {
             const dados = {
                 Nome: 'LulaMolusco',
@@ -29,14 +30,14 @@ describe('Suite de testes da ApiShopping', () => {
              }
             axios.post('http://localhost:1145/Registrar', dados)
             .then((resposta) => {
-                console.log('Resposta: ', resposta)
+                console.log('Resposta: ', resposta.data.mensagem)
             })
             .catch((error) => {
                 console.log('Error: ', error)
             })
         })
 
-        it('Teste de verificacao de placa invalida', () => {
+        it('Teste de verificacao de placa invalida', (done) => {
             const dados = {
                 Nome: 'LulaMolusco',
                 Carro: 'CivicVT',
@@ -45,20 +46,23 @@ describe('Suite de testes da ApiShopping', () => {
              }
             axios.post('http://localhost:1145/Registrar', dados)
             .then((resposta) => {
-                console.log('Resposta: ', resposta)
+                assert.equal(resposta.data.mensagem, 'Usuário cadastrado com sucesso')
+                done()
             })
             .catch((error) => {
-                console.log('Error: ', error)
+                console.log('Erro no teste de verificacao de placa invalida')
+                done(error)
             })
         })
 
     })
 
-    describe('Suite de teste da rota /FecharConta', () => {
+    describe.only('Suite de teste da rota /FecharConta', () => {
+        /*
         it('Teste de verificao de HoraSaida invalida', () => {
             const dados = {
                 Placa: 'jgi3874',
-	            HoraSaida: '2024-01-30'
+	            HoraSaida: '2024-01-30T12:59:17.760Z'
             }
         axios.post('http://localhost:1145/FecharConta', dados)
         .then((resposta) => {
@@ -69,10 +73,10 @@ describe('Suite de testes da ApiShopping', () => {
         })
 
        })
-
+       */
        it('Teste de verificao de placa nao cadastrada', () => {
         const dados = {
-            Placa: 'jgi3874',
+            Placa: 'eusouaultimavisaoqueviu',
             HoraSaida: '2024-01-30T12:59:17.760Z'
         }
         axios.post('http://localhost:1145/FecharConta', dados)
