@@ -85,15 +85,24 @@ async function validaInformacaoRotaRegistrar(DadosRotaRegistrar) {
     const dados = DadosRotaRegistrar
 
     const PlacaCarroUsuario = dados.Placa
-    const regexPlaca = /^[A-Za-z]{3}\d[A-Za-z]\d{2}$/;
+    const DataHoraEntradaUsuario = dados.HoraEntrada
 
-    if(regexPlaca.test(PlacaCarroUsuario)){
-        return 'placa valida'
+
+    const regexPlaca = /^[A-Za-z]{3}\d[A-Za-z]\d{2}$/;
+    const regexData = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
+
+    if(regexPlaca.test(PlacaCarroUsuario) && regexData.test(DataHoraEntradaUsuario)){
+        console.log('Placa e data valida')
+        return 'placa e data valida'
     }else{
-        return 'placa invalida'
+        console.log('Placa e data invalida')
+        return 'placa ou data invalida'
     }
 
 }
+
+
 /*
 async function ValidaHoraSaidaEHoraEntrada(HoraEntrada, HoraSaida) {
     console.log('HoraENtrada', HoraEntrada)
@@ -116,7 +125,8 @@ function CriarRotasApiShopping() {
                    const Vagas = await VagasShopping.find({})
                     const RespostaRotaVaga = Vagas[0].VagasLivres;
                     const validacaoinformacaorotaregistrar = await validaInformacaoRotaRegistrar(request.payload)
-                if(RespostaRotaVaga >= 1 && validacaoinformacaorotaregistrar == 'placa valida'){
+                    console.log('validacaoinformacaorotaregistrar', validacaoinformacaorotaregistrar)
+                if(RespostaRotaVaga >= 1 && validacaoinformacaorotaregistrar == 'placa e data valida'){
                     try{
                         const { Nome, Carro, Placa, HoraEntrada } = request.payload;
                         const novoUsuario = new Usuario({ Nome, Carro, Placa, HoraEntrada });

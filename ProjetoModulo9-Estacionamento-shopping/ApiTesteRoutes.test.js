@@ -3,12 +3,12 @@ const axios = require('axios')
 
 describe('Suite de testes da ApiShopping', () => {
     describe('Suite de testes da rota /Registrar', () => {
-        
+        /*
         it('Teste de verificao de tipos de dados', () => {
                 const dados = {
                     Nome: 132654347685,
 		            Carro: 454,
-		            Placa: 434,
+		            Placa: 54353,
 		            HoraEntrada: 2024
                 }
             axios.post('http://localhost:1145/Registrar', dados)
@@ -20,29 +20,32 @@ describe('Suite de testes da ApiShopping', () => {
             })
 
         })
+        */
+        it('Teste de verificacao de data valida', async () => {
+            const dados = {
+                Nome: 'LulaMolusco',
+                Carro: 'CivicVT',
+                Placa: 'kjd4k43',
+                HoraEntrada: '2024-01-30T12:59:17.760Z'
+            };
         
-        it('Teste de verificacao de data invalida', () => {
-            const dados = {
-                Nome: 'LulaMolusco',
-                Carro: 'CivicVT',
-                Placa: 'jgi3874',
-                HoraEntrada: '2024-01-29'
-             }
-            axios.post('http://localhost:1145/Registrar', dados)
-            .then((resposta) => {
-                console.log('Resposta: ', resposta.data.mensagem)
-            })
-            .catch((error) => {
-                console.log('Error: ', error)
-            })
-        })
+            try {
+                const resposta = await axios.post('http://localhost:1145/Registrar', dados);
+                assert.equal(resposta.data.mensagem, 'Usuário cadastrado com sucesso');
+                console.log('Resposta: ', resposta.data.mensagem);
+            } catch (error) {
+                console.error('Error: ', error);
+                throw error; // Isso fará o teste falhar caso haja uma exceção.
+            }
+        });
+        
 
-        it('Teste de verificacao de placa invalida', (done) => {
+        it('Teste de verificacao de placa valida', (done) => {
             const dados = {
                 Nome: 'LulaMolusco',
                 Carro: 'CivicVT',
-                Placa: 'kjkszpj',
-                HoraEntrada: '2024-01-29'
+                Placa: 'kjk8s12',
+                HoraEntrada: '2024-01-30T12:59:17.760Z'
              }
             axios.post('http://localhost:1145/Registrar', dados)
             .then((resposta) => {
@@ -76,7 +79,7 @@ describe('Suite de testes da ApiShopping', () => {
        */
        it('Teste de verificao de placa nao cadastrada', () => {
         const dados = {
-            Placa: 'eusouaultimavisaoqueviu',
+            Placa: 'kjkszpj',
             HoraSaida: '2024-01-30T12:59:17.760Z'
         }
         axios.post('http://localhost:1145/FecharConta', dados)
@@ -115,6 +118,7 @@ describe('Suite de testes da ApiShopping', () => {
             axios.post('http://localhost:1145/Pagar', dados)
             .then((resposta) => {
                 console.log('Resposta: ', resposta)
+
             })
             .catch((error) => {
                 console.log('Error: ', error)
