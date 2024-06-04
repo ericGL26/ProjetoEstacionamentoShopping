@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const axios = require('axios')
 
 const usuarioSchemaRegistros = new mongoose.Schema({
     Nome: {
@@ -102,6 +103,14 @@ async function validaInformacaoRotaRegistrar(DadosRotaRegistrar) {
 
 }
 
+async function validaInformacaoRotaFecharConta(DadosRotaFecharConta) {
+
+}
+
+async function BuscarDadosBancoRegistros(PlacaUsuario){
+    const Registros = await Usuario.find({Placa: "tamsadesinmuitomuitomuito"})
+    console.log('Registros aqui ->', Registros)
+}
 
 /*
 async function ValidaHoraSaidaEHoraEntrada(HoraEntrada, HoraSaida) {
@@ -122,24 +131,33 @@ function CriarRotasApiShopping() {
             method: 'POST',
             path: '/Registrar',
             handler: async (request, h) => {
-                   const Vagas = await VagasShopping.find({})
+
+                    const Vagas = await VagasShopping.find({})
                     const RespostaRotaVaga = Vagas[0].VagasLivres;
                     const validacaoinformacaorotaregistrar = await validaInformacaoRotaRegistrar(request.payload)
-                    console.log('validacaoinformacaorotaregistrar', validacaoinformacaorotaregistrar)
-                if(RespostaRotaVaga >= 1 && validacaoinformacaorotaregistrar == 'placa e data valida'){
-                    try{
-                        const { Nome, Carro, Placa, HoraEntrada } = request.payload;
-                        const novoUsuario = new Usuario({ Nome, Carro, Placa, HoraEntrada });
-                        await novoUsuario.save()
-                        GerenciarVagas('retirar')       
-                        return {mensagem: 'Usuário cadastrado com sucesso'}
+                    BuscarDadosBancoRegistros()
 
-                    }catch(error){
-                        console.log('Deu ruim!, bloco try falhou!', error)
+                console.log(RespostaRotaVaga, "<-")
+                if(RespostaRotaVaga != 0){
+                    if(validacaoinformacaorotaregistrar == 'placa e data valida'){
+                        try{
+                            const { Nome, Carro, Placa, HoraEntrada } = request.payload;
+                            const novoUsuario = new Usuario({ Nome, Carro, Placa, HoraEntrada });
+                            await novoUsuario.save()
+                            GerenciarVagas('retirar')       
+                            return 'Usuário cadastrado com sucesso'
+    
+                        }catch(error){
+                            console.log('Deu ruim!, bloco try falhou!', error)
+                        }
+                    }else{
+                        console.log('Placa ou data inválida');
+                        return 'Placa ou data inválida'
                     }
+              
                 }else{
-                    console.log('nao ha vagas restantes ou foi enviado uma placa invalida')
-                    return 'A validação da rota registrar não pode continuar por um erro desconhecido'
+                    console.log('Garagem lotada')
+                    return 'Garagem lotada'
                 }
 
             }
@@ -157,7 +175,7 @@ function CriarRotasApiShopping() {
                 const ResultadoRegistro = await Usuario.find({ Placa: Placa });
                 if(ResultadoRegistro == undefined || null || ResultadoRegistro.length === 0 ){
                     console.log('Nao foi possivel definir um valor para ResultadoRegistro pois provavelmento o usuario nao existe no banco')
-                    return 'Usuario não encontrado'
+                    return {mensagem: 'Usuario não encontrado'}
                 }
                 const HoraEntrada = new Date(ResultadoRegistro[0].HoraEntrada)
                 
@@ -167,7 +185,12 @@ function CriarRotasApiShopping() {
                 const ValorAPagar = PrecoPorMinuto * minutos
 
                 const diferenca_tempo = await CalcularTempoQueUsuarioFicaNoEstacionamento(DiferencaDeTempo)
-                return `Tempo no estacionamento: ${diferenca_tempo[2]} horas ${diferenca_tempo[1]} minutos  e ${diferenca_tempo[0]} segundos, Preço a pagar ${ValorAPagar}`
+                return {
+                    message: "Conta fechada com sucesso",
+                    tempo_no_estacionamento : `${diferenca_tempo[2]} horas ${diferenca_tempo[1]} minutos  e ${diferenca_tempo[0]} segundos`,
+                    valor: ValorAPagar
+                } 
+                
                }catch(error){   
                 console.log('Deu ruim', error)
                }
